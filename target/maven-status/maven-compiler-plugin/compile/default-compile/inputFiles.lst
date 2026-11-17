@@ -1,4 +1,6 @@
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/WordCount.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/Aggregation.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/AverageProfit.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/WordCountStreaming.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/join/CsvToTuple.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/join/JoinExample.java
