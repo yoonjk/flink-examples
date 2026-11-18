@@ -1,6 +1,9 @@
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/WordCount.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/Aggregation.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/AverageProfit.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/AverageProfitAdvance.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/IterateDemo.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/SplitDemo.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/datastreamapi/WordCountStreaming.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/join/CsvToTuple.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/join/JoinExample.java
@@ -8,3 +11,8 @@
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/join/LefOuterJoinExample.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/join/OuterJoinExample.java
 /Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/join/RightJoinExample.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/windowing/AverageProfitSessionWindows.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/windowing/AverageProfitSlidingWindows.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/windowing/AverageProfitTumblingWindows.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/windowing/DataServer.java
+/Users/nexweb/project/works/bootcamp/wordcount/src/main/java/com/demo/example/windowing/SessionDataServer.java

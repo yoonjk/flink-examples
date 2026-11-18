@@ -1,13 +1,13 @@
 package com.demo.example.datastreamapi;
 
-import java.util.Spliterator;
-
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.serialization.SimpleStringEncoder;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple5;
+import org.apache.flink.connector.file.sink.FileSink;
 import org.apache.flink.connector.file.src.FileSource;
 import org.apache.flink.connector.file.src.reader.TextLineInputFormat;
 import org.apache.flink.core.fs.Path;
@@ -33,28 +33,29 @@ public class AverageProfit {
         
         // 3. FileSource
         FileSource fileSource = FileSource.forRecordStreamFormat(
-        		new TextLineInputFormat(), 
+        		new TextLineInputFormat(), // 파일을 한 줄씩 문자열로 읽음
         		new Path(input)
         	).build();
         
         DataStream<String> data = env.fromSource(
-        		fileSource, 
-        		WatermarkStrategy.noWatermarks(), 
+        		fileSource, 						// Source를 DataStream에 연결
+        		WatermarkStrategy.noWatermarks(), 	// Event Time Watermark를 생성하지 않음
         		"file Source");
         
-
+        // 4. Parse CSV
         // 4. MapFunction
         // month, category, product, profit, count
         		
 		// month, product, category, profit, count
-		DataStream<Tuple5<String, String, String, Integer, Integer>> mapped = data.map(new Splitter()); // tuple
+		DataStream<Tuple5<String, String, String, Long, Long>> mapped = data.map(new Splitter()); // CSV를 Tuple5로 변환
 							
 		// 5. KeyBy + ReduceFunction
 		// [June,Category5,Bat,12,1]
 		// [June,Category4,Perfume,10,1]
 
+		// 5. Group by month and reduce
 		// groupBy 'month'
-		DataStream<Tuple5<String, String, String, Integer, Integer>> reduced = mapped.keyBy(t -> t.f0)
+		DataStream<Tuple5<String, String, String, Long, Long>> reduced = mapped.keyBy(t -> t.f0)
 				.reduce(new Reduce1());
 		
 		// 6. Calculate average profit
@@ -68,13 +69,37 @@ public class AverageProfit {
 //					}
 //				});
 		DataStream<Tuple2<String, Double>> profitMonth = 
-			reduced
-				.map(new AverageMapper())
-				.name("Average Profit Mapper");
-		profitMonth.print();
+				reduced.map(
+						new MapFunction<Tuple5<String, String, String, Long, Long>,
+	                    Tuple2<String, Double>>() {
+
+							@Override
+							public Tuple2<String, Double> map(Tuple5<String, String, String, Long, Long> input) {
+								// TODO Auto-generated method stub
+								// 계산식:
+								
+							
+								//AverageProfit = \frac{TotalProfit}/{TotalCount}
+								
+								double average =
+										(double) input.f3 / input.f4;
+								
+								return Tuple2.of(input.f0, average);
+							}
+					}).name("Calculate Average Profit");
+                	;
 	
 		// 7. Convert to CSV string
-
+        // 7. FileSink
+        FileSink<Tuple2<String, Double>> sink = FileSink
+        		.forRowFormat(
+        				new Path(output),
+        				new SimpleStringEncoder<Tuple2<String, Double>>("UTF-8")
+        		).build();
+        
+        
+        profitMonth.sinkTo(sink);
+        
 		// execute program
 		env.execute("Avg Profit Per Month");
 		
@@ -85,27 +110,40 @@ public class AverageProfit {
 	// USER FUNCTIONS // pre_result = Category4,Perfume,22,2
 	// *************************************************************************
 
-	public static class Reduce1 implements ReduceFunction<Tuple5<String, String, String, Integer, Integer>> {
-		public Tuple5<String, String, String, Integer, Integer> reduce(
-				Tuple5<String, String, String, Integer, Integer> current,
-				Tuple5<String, String, String, Integer, Integer> pre_result) {
-			return new Tuple5<String, String, String, Integer, Integer>(current.f0, current.f1, current.f2,
+	public static class Reduce1 implements ReduceFunction<Tuple5<String, String, String, Long, Long>> {
+		public Tuple5<String, String, String, Long, Long> reduce(
+				Tuple5<String, String, String, Long, Long> current,
+				Tuple5<String, String, String, Long, Long> pre_result) {
+			return new Tuple5<String, String, String, Long, Long>(current.f0, current.f1, current.f2,
 					current.f3 + pre_result.f3, current.f4 + pre_result.f4);
 		}
 	}
 
-	public static class Splitter implements MapFunction<String, Tuple5<String, String, String, Integer, Integer>> {
-		public Tuple5<String, String, String, Integer, Integer> map(String value) // 01-06-2018,June,Category5,Bat,12
+	public static class Splitter implements MapFunction<String, Tuple5<String, String, String, Long, Long>> {
+		public Tuple5<String, String, String, Long, Long> map(String value) // 01-06-2018,June,Category5,Bat,12
 		{
 			String[] words = value.split(","); // words = [{01-06-2018},{June},{Category5},{Bat}.{12}
+			
+            if (words.length != 5) {
+                throw new IllegalArgumentException(
+                    "Invalid CSV record: " + value);
+            }
+
+            String month = words[1].trim();
+            String category = words[2].trim();
+            String product = words[3].trim();
+            long profit = Long.parseLong(words[4].trim());
+            
 			// ignore timestamp, we don't need it for any calculations
-			return new Tuple5<String, String, String, Integer, Integer>(words[1], words[2], words[3],
-					Integer.parseInt(words[4]), 1);
+            return Tuple5.of(
+                    month,
+                    category,
+                    product,
+                    profit,
+                    1L
+                );
 		} // June Category5 Bat 12
 	}
-	
-
-
 
     // ----------------------------------
     // MapFunction: Calculate Average
